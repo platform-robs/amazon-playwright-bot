@@ -1,6 +1,6 @@
 
 # src/config.py
 AMAZON_URL = "https://www.amazon.com.mx/"
-EMAIL = "@gmail.com"
-PASSWORD = "xxx"
-HEADLESS = False # True para abrir navegador
+EMAIL = "correo@dominio.com"
+PASSWORD = "contraseña"
+HEADLESS = False  # True = navegador oculto, False = navegador visible
