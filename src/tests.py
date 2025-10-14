@@ -58,7 +58,9 @@ class AmazonBot:
 
                 await self.navigate_to_tvs(page)
                 await self.select_product(page)
-            
+                await self.add_to_cart(page)
+                await self.proceed_to_checkout(page)
+
             except Exception as e:
                 self.logger.error(f"Test failed: {e}")
                 await page.screenshot(path=os.path.join(self.screenshot_folder,
@@ -209,13 +211,78 @@ class AmazonBot:
         :param page:
         :return:
         """
+        try:
+            self.logger.info("Starting product selection...")
+            await page.wait_for_selector(AmazonLocators.PRODUCT_ITEM,
+                                         timeout=15000)
+            await asyncio.sleep(2)
+            await page.click(AmazonLocators.PRODUCT_ITEM, force=True)
+            self.logger.info("Clicked on product item container.")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "08_product_list.png"))
+            self.logger.info("Product selection completed.")
+        except Exception as e:
+            self.logger.error(f"Failed to select product: {e}")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "select_product_error.png"))
+            raise
 
-        self.logger.info("Starting product selection...")
-        await page.wait_for_selector(AmazonLocators.PRODUCT_ITEM)
-        await page.click(AmazonLocators.PRODUCT_ITEM, force=True)
-        self.logger.info("Clicked on product item container.")
-        await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                "08_product_list.png"))
+    # -------------------------------------------------------------------------
+    # Add to cart
+
+    async def add_to_cart(self, page):
+        """
+        Adds the selected product to the cart.
+
+        :param page:
+        :return:
+        """
+
+        self.logger.info("Adding product to cart...")
+        try:
+            await page.wait_for_selector(AmazonLocators.ADD_TO_CART_BUTTON,
+                                         timeout=10000)
+            await page.click(AmazonLocators.ADD_TO_CART_BUTTON)
+            await page.wait_for_load_state("networkidle")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "09_added_to_cart.png"))
+            self.logger.info("Product added to cart successfully.")
+        except Exception as e:
+            self.logger.error(f"Error adding product to cart: {e}")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "error_add_to_cart.png"))
+
+    async def proceed_to_checkout(self, page):
+        """
+        Proceeds to the checkout page.
+
+        :param page:
+        :return:
+        """
+
+        self.logger.info("Proceeding to checkout...")
+        try:
+            await page.wait_for_selector(AmazonLocators.CART_BUTTON)
+            await asyncio.sleep(2)
+            await page.click(AmazonLocators.CART_BUTTON)
+            self.logger.info("Cart page loaded.")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "10_cart_page.png"))
+
+            self.logger.info("Clicking proceed to checkout...")
+            await page.wait_for_selector(
+                AmazonLocators.PROCEED_TO_CHECKOUT_BUTTON, timeout=15000)
+            await asyncio.sleep(2)
+            await page.click(AmazonLocators.PROCEED_TO_CHECKOUT_BUTTON)
+            self.logger.info("Clicked proceed to checkout button.")
+            await page.wait_for_load_state("networkidle")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "11_checkout.png"))
+            self.logger.info("Proceeded to checkout successfully.")
+        except Exception as e:
+            self.logger.error(f"Error proceeding to checkout: {e}")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "error_checkout.png"))
 
 
 if __name__ == "__main__":
