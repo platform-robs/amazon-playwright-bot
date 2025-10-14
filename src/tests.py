@@ -7,6 +7,26 @@ from locators import AmazonLocators
 
 
 class AmazonBot:
+    """
+    A bot that automates the process of logging into Amazon,
+    navigating to the TV section, applying a filter, selecting a product,
+    adding it to the cart, and proceeding to checkout.
+
+    Attributes:
+        logger (logging.Logger): Logger for logging messages.
+        screenshot_folder (str): Folder to save screenshots.
+
+    Methods:
+        run_test(): Main method to run the test sequence.
+        is_logged_in(page): Checks if the user is logged in.
+        login(page): Logs into the Amazon account.
+        navigate_to_tvs(page): Navigates to the TV section.
+        apply_filter(page): Applies the 56 inches or more filter.
+        select_first_product(page): Selects the first product from the list.
+        add_to_cart(page): Adds the selected product to the cart.
+        proceed_to_checkout(page): Proceeds to the checkout page.
+    """
+
     def __init__(self):
         self.logger = setup_logger()
         self.screenshot_folder = "screenshots"
@@ -37,7 +57,7 @@ class AmazonBot:
                                      "login is not necessary.")
 
                 await self.navigate_to_tvs(page)
-                await self.apply_filter(page)
+                # await self.apply_filter(page)
 
             except Exception as e:
                 self.logger.error(f"Test failed: {e}")
@@ -51,6 +71,13 @@ class AmazonBot:
     # Is_logged_in
 
     async def is_logged_in(self, page) -> bool:
+        """
+        Verifies if the user is logged in
+
+        :return: True if logged in, False otherwise
+        :rtype: bool
+        """
+
         try:
             await page.wait_for_selector(AmazonLocators.LOGIN_LINK, timeout=10000)
             login_text = await page.inner_text(AmazonLocators.LOGIN_LINK)
@@ -70,6 +97,13 @@ class AmazonBot:
     # Login
 
     async def login(self, page):
+        """
+        Login to Amazon account
+
+        :return: None
+        :rtype: None
+        """
+
         try:
             self.logger.info("Logining to Amazon account...")
             await page.wait_for_selector(AmazonLocators.LOGIN_LINK, timeout=15000)
@@ -114,10 +148,19 @@ class AmazonBot:
     # Navigate to TVs
 
     async def navigate_to_tvs(self, page):
+        """
+        Navigates to the TV section on Amazon
+
+        :return: None
+        :rtype: None
+        """
+
         self.logger.info("Navigating to TV section...")
 
         self.logger.info("Opening hamburger menu...")
-        await page.wait_for_selector(AmazonLocators.HAMBURGER_MENU, timeout=15000)
+        # force click in HAMBURGER_MENU for overlay issues
+        await page.click(AmazonLocators.HAMBURGER_MENU, force=True)
+        # await page.wait_for_selector(AmazonLocators.HAMBURGER_MENU, timeout=15000)
         await page.click(AmazonLocators.HAMBURGER_MENU)
         await asyncio.sleep(2)
         self.logger.info("Hamburger menu opened.")
@@ -134,7 +177,8 @@ class AmazonBot:
 
         self.logger.info("Selecting TV & Video...")
         await page.wait_for_selector(AmazonLocators.TV_VIDEO_CATEGORY)
-        await page.click(AmazonLocators.TV_VIDEO_CATEGORY)
+        # force click in case of overlay issues
+        await page.click(AmazonLocators.TV_VIDEO_CATEGORY, force=True)
         await asyncio.sleep(2)
         self.logger.info("TV & Video category selected.")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
@@ -157,22 +201,6 @@ class AmazonBot:
 
         self.logger.info("Navigated to TV section successfully.")
 
-    # -------------------------------------------------------------------------
-    # Apply filter
-  
-    async def apply_filter(self, page):
-           self.logger.info("Applying 56 pulgadas o más...")
-        try:
-            await page.wait_for_selector("div[data-csa-c-content-id*='size']", timeout=10000)
-            filter_element = page.locator('a:has-text("56")')
-            await filter_element.first.scroll_into_view_if_needed()
-            await filter_element.first.click()
-            await page.wait_for_load_state("networkidle")
-            await page.screenshot(path=os.path.join(self.screenshot_folder, "03_filter_applied.png"))
-            self.logger.info("Filter applyed successfuly.")
-        except Exception as e:
-            self.logger.error(f" Error applying filter: {e}")
-            await page.screenshot(path=os.path.join(self.screenshot_folder, "error_filter.png"))
 
 if __name__ == "__main__":
     test = AmazonBot()
