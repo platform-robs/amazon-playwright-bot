@@ -13,3 +13,6 @@ class AmazonLocators:
     TV_VIDEO_CATEGORY = 'a.hmenu-item:has-text("Televisión y Video")'
     TVS_CATEGORY = 'img[alt="Televisiones"]'
     FIFTY_SIX_INCH_FILTER = 'img[alt="56\\" y Más"]'
+
+    # Cart page locators
+    CART_BUTTON = "#nav-cart"
