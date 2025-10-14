@@ -201,16 +201,26 @@ class AmazonBot:
 
         self.logger.info("Navigated to TV section successfully.")
 
+    # -------------------------------------------------------------------------
+    # Select first product
+
     async def select_first_product(self, page):
+        """
+        Selects the first product from the list of TVs.
+        
+        :param page: 
+        :return: 
+        """
 
         self.logger.info("Selecting the first product...")
+        # force click in PRODUCT_ITEM for overlay issues
         await page.wait_for_selector(AmazonLocators.PRODUCT_ITEM, timeout=15000)
         first_product = page.locator(AmazonLocators.PRODUCT_ITEM).first
         await first_product.scroll_into_view_if_needed()
         await first_product.click()
         await page.wait_for_load_state("networkidle")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                "04_product_selected.png"))
+                                                "08_product_selected.png"))
         self.logger.info("Product selected successfully.")
 
 
