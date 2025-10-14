@@ -1,54 +1,304 @@
 """
-Logger setup for the Amazon bot.
-
-This file configures the logging system used across the bot.
-It creates both a file log (saved in the /logs folder) and a
-console output so you can track what’s happening in real time.
-
-How it works:
--------------
-- Creates a "logs" folder automatically if it doesn’t exist.
-- Generates a new log file every time you run the bot.
-- Each log entry includes:
-    * Timestamp
-    * Log level (INFO, ERROR, etc.)
-    * Message from the bot
-
-Example log entry:
-------------------
-2025-10-13 13:45:22 [INFO] Logged into Amazon successfully.
-
-Tip:
-----
-Use `logger.info()` for regular updates, and
-`logger.error()` to record exceptions or failed actions.
+This module contains the AmazonBot class that automates interactions
 """
 
-
-import logging
+import asyncio
 import os
 
-from datetime import datetime
+from playwright.async_api import async_playwright
+from config import AMAZON_URL, EMAIL, PASSWORD, HEADLESS
+from logger import setup_logger
+from locators import AmazonLocators
 
 
-def setup_logger():
-    log_folder = "logs"
-    os.makedirs(log_folder, exist_ok=True)
+class AmazonBot:
+    """
+    A bot that automates the process of logging into Amazon,
+    navigating to the TV section, applying a filter, selecting a product,
+    adding it to the cart, and proceeding to checkout.
 
-    logger = logging.getLogger("AmazonBot")
-    logger.setLevel(logging.INFO)
+    Attributes:
+        logger (logging.Logger): Logger for logging messages.
+        screenshot_folder (str): Folder to save screenshots.
 
-    handler = logging.FileHandler(
-        os.path.join(log_folder, f"amazon_bot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"),
-        mode='w'
-    )
-    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
+    Methods:
+        run_test(): Main method to run the test sequence.
+        is_logged_in(page): Checks if the user is logged in.
+        login(page): Logs into the Amazon account.
+        navigate_to_tvs(page): Navigates to the TV section.
+        apply_filter(page): Applies the 56 inches or more filter.
+        select_first_product(page): Selects the first product from the list.
+        add_to_cart(page): Adds the selected product to the cart.
+        proceed_to_checkout(page): Proceeds to the checkout page.
+    """
 
-    # Console output
-    console = logging.StreamHandler()
-    console.setFormatter(formatter)
-    logger.addHandler(console)
+    def __init__(self):
+        self.logger = setup_logger()
+        self.screenshot_folder = "screenshots"
+        os.makedirs(self.screenshot_folder, exist_ok=True)
 
-    return logger
+    async def run_test(self):
+        self.logger.info("Starting Amazon Bot...")
+
+        async with async_playwright() as p:
+            # Persistent context to maintain session
+            browser = await p.chromium.launch_persistent_context(
+                user_data_dir="./user_data",
+                headless=HEADLESS,
+                args=["--start-maximized"]
+            )
+            page = await browser.new_page()
+
+            self.logger.info("Navigating to Amazon homepage...")
+            await page.goto(AMAZON_URL, wait_until="domcontentloaded")
+            await asyncio.sleep(2)
+
+            try:
+                logged_in = await self.is_logged_in(page)
+                if not logged_in:
+                    await self.login(page)
+                else:
+                    self.logger.info("Session detected,"
+                                     "login is not necessary.")
+
+                await self.navigate_to_tvs(page)
+                await self.select_product(page)
+                await self.add_to_cart(page)
+                await self.proceed_to_checkout(page)
+
+            except Exception as e:
+                self.logger.error(f"Test failed: {e}")
+                await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                        "error_general.png"))
+            finally:
+                self.logger.info("Test completed.")
+                await browser.close()
+
+    # -------------------------------------------------------------------------
+    # Is_logged_in
+
+    async def is_logged_in(self, page) -> bool:
+        """
+        Verifies if the user is logged in
+
+        :return: True if logged in, False otherwise
+        :rtype: bool
+        """
+
+        try:
+            await page.wait_for_selector(AmazonLocators.LOGIN_LINK,
+                                         timeout=10000)
+            login_text = await page.inner_text(AmazonLocators.LOGIN_LINK)
+
+            # If the text does not contain "Identifícate" or "Sign in",
+            # user is logged in
+            if "identifícate" not in login_text and "Sign in" not in login_text:
+                self.logger.info(f"User is logged in: {login_text}")
+                return True
+
+            self.logger.info("There is no active session.")
+            return False
+        except Exception as e:
+            self.logger.warning(f"Could not determine login status: {e}")
+            return False
+
+    # -------------------------------------------------------------------------
+    # Login
+
+    async def login(self, page):
+        """
+        Login to Amazon account
+
+        :return: None
+        :rtype: None
+        """
+
+        try:
+            self.logger.info("Logining to Amazon account...")
+            await page.wait_for_selector(AmazonLocators.LOGIN_LINK,
+                                         timeout=15000)
+            await page.click(AmazonLocators.LOGIN_LINK)
+
+            self.logger.info("Filling in credentials...")
+            await asyncio.sleep(2)
+
+            self.logger.info("Waiting for email input...")
+            await page.wait_for_selector(AmazonLocators.EMAIL_INPUT,
+                                         timeout=10000)
+
+            self.logger.info("Filling email...")
+            await page.fill(AmazonLocators.EMAIL_INPUT, EMAIL)
+
+            self.logger.info("Clicking continue...")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "00_login_page.png"))
+            await asyncio.sleep(2)
+            await page.click(AmazonLocators.CONTINUE_BUTTON)
+
+            self.logger.info("Waiting for password input...")
+            await asyncio.sleep(2)
+            await page.wait_for_selector(AmazonLocators.PASSWORD_INPUT,
+                                         timeout=10000)
+
+            self.logger.info("Filling password...")
+            await page.fill(AmazonLocators.PASSWORD_INPUT, PASSWORD)
+
+            self.logger.info("Clicking sign in...")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "01_credentials.png"))
+            await asyncio.sleep(2)
+            await page.click(AmazonLocators.SIGN_IN_BUTTON)
+
+            self.logger.info("Login successful.")
+        except Exception as e:
+            self.logger.error(f"Error during login: {e}")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "error_login.png"))
+            raise
+
+    # -------------------------------------------------------------------------
+    # Navigate to TVs
+
+    async def navigate_to_tvs(self, page):
+        """
+        Navigates to the TV section on Amazon
+
+        :return: None
+        :rtype: None
+        """
+
+        self.logger.info("Navigating to TV section...")
+
+        self.logger.info("Opening hamburger menu...")
+        # force click in HAMBURGER_MENU for overlay issues
+        await page.click(AmazonLocators.HAMBURGER_MENU, force=True)
+        await page.click(AmazonLocators.HAMBURGER_MENU)
+        await asyncio.sleep(2)
+        self.logger.info("Hamburger menu opened.")
+        await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                "03_hamburger_menu.png"))
+
+        self.logger.info("Selecting Electronics...")
+        await page.wait_for_selector(AmazonLocators.ELECTRONICS_CATEGORY)
+        await page.click(AmazonLocators.ELECTRONICS_CATEGORY, force=True)
+        await asyncio.sleep(2)
+        self.logger.info("Electronics category selected.")
+        await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                "04_electronics_category.png"))
+
+        self.logger.info("Selecting TV & Video...")
+        await page.wait_for_selector(AmazonLocators.TV_VIDEO_CATEGORY)
+        # force click in case of overlay issues
+        await page.click(AmazonLocators.TV_VIDEO_CATEGORY, force=True)
+        await asyncio.sleep(2)
+        self.logger.info("TV & Video category selected.")
+        await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                "05_tv_video_category.png"))
+
+        self.logger.info("Selecting TVs...")
+        await page.wait_for_selector(AmazonLocators.TVS_CATEGORY)
+        await page.click(AmazonLocators.TVS_CATEGORY)
+        self.logger.info("TVs category selected.")
+        await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                "06_tvs_category.png"))
+
+        self.logger.info("Filtering by size: 56 pulgadas o más...")
+        await page.wait_for_selector(AmazonLocators.FIFTY_SIX_INCH_FILTER)
+        await page.click(AmazonLocators.FIFTY_SIX_INCH_FILTER, force=True)
+        self.logger.info("Clicked '56 pulgadas o más' filter.")
+        await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                "07_filtered_tvs.png"))
+
+        self.logger.info("Navigated to TV section successfully.")
+
+    # -------------------------------------------------------------------------
+    # Select first product
+
+    async def select_product(self, page):
+        """
+        Selects the first product from the list of TVs.
+
+        :param page:
+        :return:
+        """
+        try:
+            self.logger.info("Starting product selection...")
+            await page.wait_for_selector(AmazonLocators.PRODUCT_ITEM,
+                                         timeout=30000)
+            self.logger.info("Product items loaded.")
+            await asyncio.sleep(2)
+            await page.click(AmazonLocators.PRODUCT_ITEM, force=True)
+            self.logger.info("Clicked on product item container.")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "08_product_list.png"))
+            self.logger.info("Product selection completed.")
+        except Exception as e:
+            self.logger.error(f"Failed to select product: {e}")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "select_prod_error.png"))
+            raise
+
+    # -------------------------------------------------------------------------
+    # Add to cart
+
+    async def add_to_cart(self, page):
+        """
+        Adds the selected product to the cart.
+
+        :param page:
+        :return:
+        """
+
+        self.logger.info("Adding product to cart...")
+        try:
+            await page.wait_for_selector(AmazonLocators.ADD_TO_CART_BUTTON,
+                                         timeout=10000)
+            await page.click(AmazonLocators.ADD_TO_CART_BUTTON)
+            await page.wait_for_load_state("networkidle")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "09_added_to_cart.png"))
+            self.logger.info("Product added to cart successfully.")
+        except Exception as e:
+            self.logger.error(f"Error adding product to cart: {e}")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "error_add_to_cart.png"))
+
+    # -------------------------------------------------------------------------
+    # Proceed to checkout
+
+    async def proceed_to_checkout(self, page):
+        """
+        Proceeds to the checkout page.
+
+        :param page:
+        :return:
+        """
+
+        self.logger.info("Proceeding to checkout...")
+        try:
+            await page.wait_for_selector(AmazonLocators.CART_BUTTON)
+            await asyncio.sleep(2)
+            await page.click(AmazonLocators.CART_BUTTON)
+            self.logger.info("Cart page loaded.")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "10_cart_page.png"))
+
+            self.logger.info("Clicking proceed to checkout...")
+            await page.wait_for_selector(
+                AmazonLocators.PROCEED_TO_CHECKOUT_BUTTON, timeout=15000)
+            await asyncio.sleep(2)
+            await page.click(AmazonLocators.PROCEED_TO_CHECKOUT_BUTTON)
+            self.logger.info("Clicked proceed to checkout button.")
+            await page.wait_for_load_state("networkidle")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "11_checkout.png"))
+            self.logger.info("Proceeded to checkout successfully.")
+        except Exception as e:
+            self.logger.error(f"Error proceeding to checkout: {e}")
+            await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                    "error_checkout.png"))
+
+
+if __name__ == "__main__":
+    test = AmazonBot()
+    asyncio.run(test.run_test())
