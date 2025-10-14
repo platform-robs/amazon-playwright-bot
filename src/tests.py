@@ -81,10 +81,12 @@ class AmazonBot:
         """
 
         try:
-            await page.wait_for_selector(AmazonLocators.LOGIN_LINK, timeout=10000)
+            await page.wait_for_selector(AmazonLocators.LOGIN_LINK,
+                                         timeout=10000)
             login_text = await page.inner_text(AmazonLocators.LOGIN_LINK)
 
-            # If the text does not contain "Identifícate" or "Sign in", user is logged in
+            # If the text does not contain "Identifícate" or "Sign in",
+            # user is logged in
             if "identifícate" not in login_text and "Sign in" not in login_text:
                 self.logger.info(f"User is logged in: {login_text}")
                 return True
@@ -108,14 +110,16 @@ class AmazonBot:
 
         try:
             self.logger.info("Logining to Amazon account...")
-            await page.wait_for_selector(AmazonLocators.LOGIN_LINK, timeout=15000)
+            await page.wait_for_selector(AmazonLocators.LOGIN_LINK,
+                                         timeout=15000)
             await page.click(AmazonLocators.LOGIN_LINK)
 
             self.logger.info("Filling in credentials...")
             await asyncio.sleep(2)
 
             self.logger.info("Waiting for email input...")
-            await page.wait_for_selector(AmazonLocators.EMAIL_INPUT, timeout=10000)
+            await page.wait_for_selector(AmazonLocators.EMAIL_INPUT,
+                                         timeout=10000)
 
             self.logger.info("Filling email...")
             await page.fill(AmazonLocators.EMAIL_INPUT, EMAIL)
@@ -128,14 +132,15 @@ class AmazonBot:
 
             self.logger.info("Waiting for password input...")
             await asyncio.sleep(2)
-            await page.wait_for_selector(AmazonLocators.PASSWORD_INPUT, timeout=10000)
+            await page.wait_for_selector(AmazonLocators.PASSWORD_INPUT,
+                                         timeout=10000)
 
             self.logger.info("Filling password...")
             await page.fill(AmazonLocators.PASSWORD_INPUT, PASSWORD)
 
             self.logger.info("Clicking sign in...")
             await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                    "01_filled_credentials.png"))
+                                                    "01_credentials.png"))
             await asyncio.sleep(2)
             await page.click(AmazonLocators.SIGN_IN_BUTTON)
 
@@ -224,7 +229,7 @@ class AmazonBot:
         except Exception as e:
             self.logger.error(f"Failed to select product: {e}")
             await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                    "select_product_error.png"))
+                                                    "select_prod_error.png"))
             raise
 
     # -------------------------------------------------------------------------
@@ -251,6 +256,9 @@ class AmazonBot:
             self.logger.error(f"Error adding product to cart: {e}")
             await page.screenshot(path=os.path.join(self.screenshot_folder,
                                                     "error_add_to_cart.png"))
+
+    # -------------------------------------------------------------------------
+    # Proceed to checkout
 
     async def proceed_to_checkout(self, page):
         """
