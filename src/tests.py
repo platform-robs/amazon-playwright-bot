@@ -201,6 +201,18 @@ class AmazonBot:
 
         self.logger.info("Navigated to TV section successfully.")
 
+    async def select_first_product(self, page):
+
+        self.logger.info("Selecting the first product...")
+        await page.wait_for_selector(AmazonLocators.PRODUCT_ITEM, timeout=15000)
+        first_product = page.locator(AmazonLocators.PRODUCT_ITEM).first
+        await first_product.scroll_into_view_if_needed()
+        await first_product.click()
+        await page.wait_for_load_state("networkidle")
+        await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                "04_product_selected.png"))
+        self.logger.info("Product selected successfully.")
+
 
 if __name__ == "__main__":
     test = AmazonBot()
