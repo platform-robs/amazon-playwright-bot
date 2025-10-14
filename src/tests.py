@@ -57,8 +57,8 @@ class AmazonBot:
                                      "login is not necessary.")
 
                 await self.navigate_to_tvs(page)
-                # await self.apply_filter(page)
-
+                await self.select_product(page)
+            
             except Exception as e:
                 self.logger.error(f"Test failed: {e}")
                 await page.screenshot(path=os.path.join(self.screenshot_folder,
@@ -160,7 +160,6 @@ class AmazonBot:
         self.logger.info("Opening hamburger menu...")
         # force click in HAMBURGER_MENU for overlay issues
         await page.click(AmazonLocators.HAMBURGER_MENU, force=True)
-        # await page.wait_for_selector(AmazonLocators.HAMBURGER_MENU, timeout=15000)
         await page.click(AmazonLocators.HAMBURGER_MENU)
         await asyncio.sleep(2)
         self.logger.info("Hamburger menu opened.")
@@ -193,8 +192,7 @@ class AmazonBot:
 
         self.logger.info("Filtering by size: 56 pulgadas o más...")
         await page.wait_for_selector(AmazonLocators.FIFTY_SIX_INCH_FILTER)
-        await page.click(AmazonLocators.FIFTY_SIX_INCH_FILTER,
-                         force=True)  # Added force=True
+        await page.click(AmazonLocators.FIFTY_SIX_INCH_FILTER, force=True)
         self.logger.info("Clicked '56 pulgadas o más' filter.")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
                                                 "07_filtered_tvs.png"))
@@ -204,24 +202,20 @@ class AmazonBot:
     # -------------------------------------------------------------------------
     # Select first product
 
-    async def select_first_product(self, page):
+    async def select_product(self, page):
         """
         Selects the first product from the list of TVs.
-        
-        :param page: 
-        :return: 
+
+        :param page:
+        :return:
         """
 
-        self.logger.info("Selecting the first product...")
-        # force click in PRODUCT_ITEM for overlay issues
-        await page.wait_for_selector(AmazonLocators.PRODUCT_ITEM, timeout=15000)
-        first_product = page.locator(AmazonLocators.PRODUCT_ITEM).first
-        await first_product.scroll_into_view_if_needed()
-        await first_product.click()
-        await page.wait_for_load_state("networkidle")
+        self.logger.info("Starting product selection...")
+        await page.wait_for_selector(AmazonLocators.PRODUCT_ITEM)
+        await page.click(AmazonLocators.PRODUCT_ITEM, force=True)
+        self.logger.info("Clicked on product item container.")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                "08_product_selected.png"))
-        self.logger.info("Product selected successfully.")
+                                                "08_product_list.png"))
 
 
 if __name__ == "__main__":
