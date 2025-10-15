@@ -110,6 +110,9 @@ Antes de ejecutar cualquier script, activa el venv:
 
 ## Uso
 
+Se deberan cambiar la contraseña y el correo del usuario; 
+por el momento el cambio mediante endpoint se está trabajando en la rama **T-0001**
+
 Durante la ejecución, se generará un archivo de log en el mismo directorio, con información de cada paso y cualquier error detectado.
 
 Además de una carpeta con las capturas de pantalla para comprobar los detalles.
