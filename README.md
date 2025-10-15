@@ -40,7 +40,7 @@ El proyecto deberá poder ejecutarse en modo **con interfaz (headed)** o **sin i
 ## Estructura del Proyecto
 
 ```
-amazon-bot/
+amazon-playwright-bot/
 ├── src/
 │   ├── config.py
 │   ├── locators.py
@@ -50,49 +50,106 @@ amazon-bot/
 ├── api/
 │   └── api.py
 │
+├── README.md
 ├── requirements.txt
-└── README.md
+└── setup_env
 ```
 
 ---
-## Instalación
+## Instalación y preparación del entorno
 
-**1. Clonar el repositorio:**
-```
-git clone https://github.com/platform-robs/amazon-playwright-bot.git
-cd amazon-playwright-bot/src
-```
+Este proyecto incluye un script (setup_env.py) que configura todo automáticamente: crea un entorno virtual e instala las dependencias necesarias.
 
-**2. Crear un entorno virtual (opcional pero recomendado):**
-```
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
+**Requisitos previos:**
 
-*Para este caso, probando en Colab*
-```
-!pip install playwright
+* Python 3.9 o superior
+* Acceso a la terminal / línea de comandos
+* pip actualizado (opcional pero recomendado):
+* python -m pip install --upgrade pip
 
-# Install browsers
-!playwright install
+## Pasos para configurar el entorno
 
-import asyncio
-import nest_asyncio
+**Clonar el proyecto:**
 
-nest_asyncio.apply()
+`git clone https://github.com/platform-robs/amazon-playwright-bot.git`
 
-from playwright.async_api import async_playwright
-```
+**Ejecutar el script de configuración:**
 
-**3. Instalar dependencias:**
-```
-pip install -r requirements.txt
-```
+`python setup_env.py`
 
-**4. Instalar navegadores de Playwright:**
-```
-playwright install
-```
+**Esto hará automáticamente:**
+
+1. Crear un entorno virtual en venv si no existe
+2. Detectar tu sistema operativo y usar el pip correcto
+3. Instalar todas las dependencias de requirements.txt
+4. Activar el entorno virtual (opcional para trabajar dentro del entorno):
+
+**Windows:**
+
+`venv\Scripts\activate`
+
+**Linux / macOS:**
+
+`source venv/bin/activate`
+
+**Al finalizar correctamente debe mostrarse:**
+
+`All done! The virtual environment is ready with all dependencies installed.`
+
+**Activar el entorno virtual**
+
+Antes de ejecutar cualquier script, activa el venv:
+
+`.\venv\Scripts\Activate.ps1`
+
+**Verificar versión de playwright**
+
+`pip show playwright`
+
+---
+
+## Uso
+
+Se deberan cambiar la contraseña y el correo del usuario; 
+por el momento el cambio mediante endpoint se está trabajando en la rama **T-0001**
+
+Durante la ejecución, se generará un archivo de log en el mismo directorio, con información de cada paso y cualquier error detectado.
+
+Además de una carpeta con las capturas de pantalla para comprobar los detalles.
+
+---
+
+## Test
+
+El bot se encuentra en el archivo *tests.py* 
+
+Se puede correr directamente mediente la terminal, una vez que ya se haya activado el entorno virtual, utilizando el comando 
+
+`python src\tests.py`
+
+---
+
+## Funcionalidades Principales
+
+| Función | Descripción |
+|----------|--------------|
+| `run_test()` | <br>Ejecuta todo el flujo del bot: inicio de sesión, navegación, selección y compra simulada. <br><br>|
+| `is_logged_in(page)` | <br>Verifica si ya existe una sesión activa en Amazon.<br><br> |
+| `login(page)` | <br>Inicia sesión con las credenciales proporcionadas. <br><br>|
+| `navigate_to_tvs(page)` | <br>Accede a la categoría de televisores y aplica el filtro de tamaño. <br><br>|
+| `select_product(page)` | <br>Selecciona el primer producto disponible. <br><br>|
+| `add_to_cart(page)` | <br> el producto al carrito. <br><br>|
+| `proceed_to_checkout(page)` | <br>Abre el carrito y continúa hacia el proceso de compra. <br><br>|
+| `logger` | <br>Registra todas las acciones y errores durante la ejecución. <br><br>|
+
+
+---
+
+## Seguridad y buenas prácticas
+
+* No compartir credenciales reales en el repositorio.
+* Ejecutar HEADLESS=True en entornos de producción o testing automatizado.
+* Ejecutar HEADLESS=False mientras se realizan las pruebas locales.
+* Los logs se almacenan en archivos separados para poder auditar los pasos del bot.
 
 
