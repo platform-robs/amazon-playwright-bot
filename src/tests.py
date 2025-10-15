@@ -143,6 +143,7 @@ class AmazonBot:
                                                     "01_credentials.png"))
             await asyncio.sleep(2)
             await page.click(AmazonLocators.SIGN_IN_BUTTON)
+            await asyncio.sleep(5)
 
             self.logger.info("Login successful.")
         except Exception as e:
@@ -162,12 +163,14 @@ class AmazonBot:
         :rtype: None
         """
 
-        self.logger.info("Navigating to TV section...")
+        self.logger.info("Home page, navigating to TV section...")
+        await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                "02_home_logged_in.png"))
 
         self.logger.info("Opening hamburger menu...")
         # force click in HAMBURGER_MENU for overlay issues
+        await asyncio.sleep(5)
         await page.click(AmazonLocators.HAMBURGER_MENU, force=True)
-        await page.click(AmazonLocators.HAMBURGER_MENU)
         await asyncio.sleep(2)
         self.logger.info("Hamburger menu opened.")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
@@ -247,7 +250,7 @@ class AmazonBot:
         try:
             await page.wait_for_selector(AmazonLocators.ADD_TO_CART_BUTTON,
                                          timeout=10000)
-            await page.click(AmazonLocators.ADD_TO_CART_BUTTON)
+            await page.click(AmazonLocators.ADD_TO_CART_BUTTON, force=True)
             await page.wait_for_load_state("networkidle")
             await page.screenshot(path=os.path.join(self.screenshot_folder,
                                                     "09_added_to_cart.png"))
@@ -281,7 +284,7 @@ class AmazonBot:
             await page.wait_for_selector(
                 AmazonLocators.PROCEED_TO_CHECKOUT_BUTTON, timeout=15000)
             await asyncio.sleep(2)
-            await page.click(AmazonLocators.PROCEED_TO_CHECKOUT_BUTTON)
+            await page.click(AmazonLocators.PROCEED_TO_CHECKOUT_BUTTON, force=True )
             self.logger.info("Clicked proceed to checkout button.")
             await page.wait_for_load_state("networkidle")
             await page.screenshot(path=os.path.join(self.screenshot_folder,
