@@ -40,7 +40,7 @@ El proyecto deberá poder ejecutarse en modo **con interfaz (headed)** o **sin i
 ## Estructura del Proyecto
 
 ```
-amazon-bot/
+amazon-playwright-bot/
 ├── src/
 │   ├── config.py
 │   ├── locators.py
@@ -50,49 +50,62 @@ amazon-bot/
 ├── api/
 │   └── api.py
 │
+├── README.md
 ├── requirements.txt
-└── README.md
+└── setup_env
 ```
 
 ---
-## Instalación
+## Instalación y preparación del entorno
 
-**1. Clonar el repositorio:**
-```
+Este proyecto incluye un script (setup_env.py) que configura todo automáticamente: crea un entorno virtual e instala las dependencias necesarias.
+
+**Requisitos previos:**
+
+* Python 3.9 o superior
+* Acceso a la terminal / línea de comandos
+* pip actualizado (opcional pero recomendado):
+* python -m pip install --upgrade pip
+
+## Pasos para configurar el entorno
+
+**Clonar el proyecto:**
+
 git clone https://github.com/platform-robs/amazon-playwright-bot.git
-cd amazon-playwright-bot/src
-```
 
-**2. Crear un entorno virtual (opcional pero recomendado):**
-```
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-venv\Scripts\activate     # Windows
-```
+**Ejecutar el script de configuración:**
 
-*Para este caso, probando en Colab*
-```
-!pip install playwright
+python setup_env.py
 
-# Install browsers
-!playwright install
+**Esto hará automáticamente:**
 
-import asyncio
-import nest_asyncio
+1. Crear un entorno virtual en venv si no existe
+2. Detectar tu sistema operativo y usar el pip correcto
+3. Instalar todas las dependencias de requirements.txt
+4. Activar el entorno virtual (opcional para trabajar dentro del entorno):
 
-nest_asyncio.apply()
+**Windows:**
 
-from playwright.async_api import async_playwright
-```
+venv\Scripts\activate
 
-**3. Instalar dependencias:**
-```
-pip install -r requirements.txt
-```
+**Linux / macOS:**
 
-**4. Instalar navegadores de Playwright:**
-```
-playwright install
-```
+source venv/bin/activate
+
+**Al finalizar correctamente debe mostrarse:**
+
+All done! The virtual environment is ready with all dependencies installed.
+
+**Activar el entorno virtual**
+
+Antes de ejecutar cualquier script, activa el venv:
+
+.\venv\Scripts\Activate.ps1
+
+**Verificar versión de playwright**
+
+pip show playwright
+
+---
 
 
