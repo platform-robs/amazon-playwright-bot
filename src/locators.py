@@ -45,6 +45,7 @@ class AmazonLocators:
     # Product page locators
     PRODUCT_ITEM = "a.a-link-normal.s-no-outline"
     ADD_TO_CART_BUTTON = "#add-to-cart-button"
+    ASSURANT_BUTTON = "input.a-button-input[aria-labelledby='attachSiNoCoverage-announce']"
 
     # Cart page locators
     CART_BUTTON = "#nav-cart"
