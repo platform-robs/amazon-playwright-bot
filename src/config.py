@@ -30,4 +30,4 @@ Use environment variables or a .env file instead, especially in production.
 AMAZON_URL = "https://www.amazon.com.mx/"
 EMAIL = "platform.robs@gmail.com"
 PASSWORD = "Testing002!"
-HEADLESS = True
+HEADLESS = False
