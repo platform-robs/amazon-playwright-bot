@@ -26,8 +26,7 @@ Avoid storing real credentials in plain text.
 Use environment variables or a .env file instead, especially in production.
 """
 
-
 AMAZON_URL = "https://www.amazon.com.mx/"
-EMAIL = "platform.robs@gmail.com"
-PASSWORD = "Testing002!"
+EMAIL = "correo@dominio.com"
+PASSWORD = "Contraseña"
 HEADLESS = False
