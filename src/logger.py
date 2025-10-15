@@ -26,29 +26,14 @@ Use `logger.info()` for regular updates, and
 
 
 import logging
-import os
-
-from datetime import datetime
-
 
 def setup_logger():
-    log_folder = "logs"
-    os.makedirs(log_folder, exist_ok=True)
-
     logger = logging.getLogger("AmazonBot")
     logger.setLevel(logging.INFO)
-
-    handler = logging.FileHandler(
-        os.path.join(log_folder, f"amazon_bot_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"),
-        mode='w'
-    )
-    formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-
-    # Console output
-    console = logging.StreamHandler()
-    console.setFormatter(formatter)
-    logger.addHandler(console)
-
+    if not logger.handlers:
+        ch = logging.StreamHandler()
+        ch.setLevel(logging.INFO)
+        formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
     return logger

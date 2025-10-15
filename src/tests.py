@@ -1,16 +1,21 @@
+"""
+This module contains the AmazonBot class that automates interactions
+"""
+
 import asyncio
 import os
 from playwright.async_api import async_playwright
-from config import AMAZON_URL, EMAIL, PASSWORD, HEADLESS
-from logger import setup_logger
-from locators import AmazonLocators
-
+from .config import AMAZON_URL, HEADLESS_DEFAULT, SCREENSHOT_FOLDER
+from .logger import setup_logger
+from .locators import AmazonLocators
 
 class AmazonBot:
     """
     A bot that automates the process of logging into Amazon,
     navigating to the TV section, applying a filter, selecting a product,
     adding it to the cart, and proceeding to checkout.
+
+    Credentials are now provided at runtime via API.
 
     Attributes:
         logger (logging.Logger): Logger for logging messages.
@@ -21,40 +26,38 @@ class AmazonBot:
         is_logged_in(page): Checks if the user is logged in.
         login(page): Logs into the Amazon account.
         navigate_to_tvs(page): Navigates to the TV section.
-        apply_filter(page): Applies the 56 inches or more filter.
-        select_first_product(page): Selects the first product from the list.
+        select_product(page): Selects a product from the list.
         add_to_cart(page): Adds the selected product to the cart.
         proceed_to_checkout(page): Proceeds to the checkout page.
     """
 
-    def __init__(self):
+    def __init__(self, email: str, password: str, headless: bool = HEADLESS_DEFAULT):
+        self.email = email
+        self.password = password
+        self.headless = headless
         self.logger = setup_logger()
-        self.screenshot_folder = "screenshots"
+        self.screenshot_folder = SCREENSHOT_FOLDER
         os.makedirs(self.screenshot_folder, exist_ok=True)
 
     async def run_test(self):
         self.logger.info("Starting Amazon Bot...")
 
         async with async_playwright() as p:
-            # Persistent context to maintain session
-            browser = await p.chromium.launch_persistent_context(
-                user_data_dir="./user_data",
-                headless=HEADLESS,
-                args=["--start-maximized"]
+            # Usamos launch() para evitar problemas de Windows + FastAPI
+            browser = await p.chromium.launch(
+                headless=self.headless,
+                args=["--start-maximized", "--no-sandbox"]
             )
             page = await browser.new_page()
 
-            self.logger.info("Navigating to Amazon homepage...")
-            await page.goto(AMAZON_URL, wait_until="domcontentloaded")
-            await asyncio.sleep(2)
-
             try:
-                logged_in = await self.is_logged_in(page)
-                if not logged_in:
+                await page.goto(AMAZON_URL, wait_until="domcontentloaded")
+                await asyncio.sleep(2)
+
+                if not await self.is_logged_in(page):
                     await self.login(page)
                 else:
-                    self.logger.info("Session detected,"
-                                     "login is not necessary.")
+                    self.logger.info("Session detected, login not necessary.")
 
                 await self.navigate_to_tvs(page)
                 await self.select_product(page)
@@ -62,12 +65,40 @@ class AmazonBot:
                 await self.proceed_to_checkout(page)
 
             except Exception as e:
-                self.logger.error(f"Test failed: {e}")
-                await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                        "error_general.png"))
+                self.logger.error(f"Bot failed: {e}")
+                await page.screenshot(path=os.path.join(self.screenshot_folder, "error_general.png"))
             finally:
-                self.logger.info("Test completed.")
                 await browser.close()
+                self.logger.info("Bot finished.")
+
+    # ------------------- Login -------------------
+
+    async def login(self, page):
+        """Login to Amazon account using credentials provided via API."""
+        try:
+            self.logger.info("Logging into Amazon account...")
+            await page.wait_for_selector(AmazonLocators.LOGIN_LINK, timeout=15000)
+            await page.click(AmazonLocators.LOGIN_LINK)
+
+            self.logger.info("Waiting for email input...")
+            await page.wait_for_selector(AmazonLocators.EMAIL_INPUT, timeout=10000)
+            await page.fill(AmazonLocators.EMAIL_INPUT, self.email)
+
+            await page.screenshot(path=os.path.join(self.screenshot_folder, "00_login_page.png"))
+            await page.click(AmazonLocators.CONTINUE_BUTTON)
+            await asyncio.sleep(2)
+
+            self.logger.info("Waiting for password input...")
+            await page.wait_for_selector(AmazonLocators.PASSWORD_INPUT, timeout=10000)
+            await page.fill(AmazonLocators.PASSWORD_INPUT, self.password)
+            await page.screenshot(path=os.path.join(self.screenshot_folder, "01_credentials.png"))
+            await page.click(AmazonLocators.SIGN_IN_BUTTON)
+
+            self.logger.info("Login successful.")
+        except Exception as e:
+            self.logger.error(f"Error during login: {e}")
+            await page.screenshot(path=os.path.join(self.screenshot_folder, "error_login.png"))
+            raise
 
     # -------------------------------------------------------------------------
     # Is_logged_in
@@ -96,61 +127,6 @@ class AmazonBot:
         except Exception as e:
             self.logger.warning(f"Could not determine login status: {e}")
             return False
-
-    # -------------------------------------------------------------------------
-    # Login
-
-    async def login(self, page):
-        """
-        Login to Amazon account
-
-        :return: None
-        :rtype: None
-        """
-
-        try:
-            self.logger.info("Logining to Amazon account...")
-            await page.wait_for_selector(AmazonLocators.LOGIN_LINK,
-                                         timeout=15000)
-            await page.click(AmazonLocators.LOGIN_LINK)
-
-            self.logger.info("Filling in credentials...")
-            await asyncio.sleep(2)
-
-            self.logger.info("Waiting for email input...")
-            await page.wait_for_selector(AmazonLocators.EMAIL_INPUT,
-                                         timeout=10000)
-
-            self.logger.info("Filling email...")
-            await page.fill(AmazonLocators.EMAIL_INPUT, EMAIL)
-
-            self.logger.info("Clicking continue...")
-            await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                    "00_login_page.png"))
-            await asyncio.sleep(2)
-            await page.click(AmazonLocators.CONTINUE_BUTTON)
-
-            self.logger.info("Waiting for password input...")
-            await asyncio.sleep(2)
-            await page.wait_for_selector(AmazonLocators.PASSWORD_INPUT,
-                                         timeout=10000)
-
-            self.logger.info("Filling password...")
-            await page.fill(AmazonLocators.PASSWORD_INPUT, PASSWORD)
-
-            self.logger.info("Clicking sign in...")
-            await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                    "01_credentials.png"))
-            await asyncio.sleep(2)
-            await page.click(AmazonLocators.SIGN_IN_BUTTON)
-            await asyncio.sleep(5)
-
-            self.logger.info("Login successful.")
-        except Exception as e:
-            self.logger.error(f"Error during login: {e}")
-            await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                    "error_login.png"))
-            raise
 
     # -------------------------------------------------------------------------
     # Navigate to TVs
@@ -295,7 +271,7 @@ class AmazonBot:
             await page.screenshot(path=os.path.join(self.screenshot_folder,
                                                     "error_checkout.png"))
 
-
-if __name__ == "__main__":
-    test = AmazonBot()
-    asyncio.run(test.run_test())
+#
+# if __name__ == "__main__":
+#     test = AmazonBot()
+#     asyncio.run(test.run_test())
