@@ -71,11 +71,11 @@ Este proyecto incluye un script (setup_env.py) que configura todo automáticamen
 
 **Clonar el proyecto:**
 
-git clone https://github.com/platform-robs/amazon-playwright-bot.git
+`git clone https://github.com/platform-robs/amazon-playwright-bot.git`
 
 **Ejecutar el script de configuración:**
 
-python setup_env.py
+`python setup_env.py`
 
 **Esto hará automáticamente:**
 
@@ -86,25 +86,25 @@ python setup_env.py
 
 **Windows:**
 
-venv\Scripts\activate
+`venv\Scripts\activate`
 
 **Linux / macOS:**
 
-source venv/bin/activate
+`source venv/bin/activate`
 
 **Al finalizar correctamente debe mostrarse:**
 
-All done! The virtual environment is ready with all dependencies installed.
+`All done! The virtual environment is ready with all dependencies installed.`
 
 **Activar el entorno virtual**
 
 Antes de ejecutar cualquier script, activa el venv:
 
-.\venv\Scripts\Activate.ps1
+`.\venv\Scripts\Activate.ps1`
 
 **Verificar versión de playwright**
 
-pip show playwright
+`pip show playwright`
 
 ---
 
