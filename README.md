@@ -108,4 +108,45 @@ Antes de ejecutar cualquier script, activa el venv:
 
 ---
 
+## Uso
+
+Durante la ejecución, se generará un archivo de log en el mismo directorio, con información de cada paso y cualquier error detectado.
+
+Además de una carpeta con las capturas de pantalla para comprobar los detalles.
+
+---
+
+## Test
+
+El bot se encuentra en el archivo *tests.py* 
+
+Se puede correr directamente mediente la terminal, una vez que ya se haya activado el entorno virtual, utilizando el comando 
+
+`python src\tests.py`
+
+---
+
+## Funcionalidades Principales
+
+| Función | Descripción |
+|----------|--------------|
+| `run_test()` | <br>Ejecuta todo el flujo del bot: inicio de sesión, navegación, selección y compra simulada. <br><br>|
+| `is_logged_in(page)` | <br>Verifica si ya existe una sesión activa en Amazon.<br><br> |
+| `login(page)` | <br>Inicia sesión con las credenciales proporcionadas. <br><br>|
+| `navigate_to_tvs(page)` | <br>Accede a la categoría de televisores y aplica el filtro de tamaño. <br><br>|
+| `select_product(page)` | <br>Selecciona el primer producto disponible. <br><br>|
+| `add_to_cart(page)` | <br> el producto al carrito. <br><br>|
+| `proceed_to_checkout(page)` | <br>Abre el carrito y continúa hacia el proceso de compra. <br><br>|
+| `logger` | <br>Registra todas las acciones y errores durante la ejecución. <br><br>|
+
+
+---
+
+## Seguridad y buenas prácticas
+
+* No compartir credenciales reales en el repositorio.
+* Ejecutar HEADLESS=True en entornos de producción o testing automatizado.
+* Ejecutar HEADLESS=False mientras se realizan las pruebas locales.
+* Los logs se almacenan en archivos separados para poder auditar los pasos del bot.
+
 
