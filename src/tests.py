@@ -250,10 +250,27 @@ class AmazonBot:
         try:
             await page.wait_for_selector(AmazonLocators.ADD_TO_CART_BUTTON,
                                          timeout=10000)
+            await asyncio.sleep(2)
             await page.click(AmazonLocators.ADD_TO_CART_BUTTON, force=True)
-            await page.wait_for_load_state("networkidle")
+
+            # Assurant popup
+            try:
+                assurant_btn = await page.wait_for_selector(
+                    AmazonLocators.ASSURANT_BUTTON, timeout=3000
+                )
+                await asyncio.sleep(2)
+                await page.screenshot(path=os.path.join(self.screenshot_folder,
+                                                        "09_Assurant_popup.png"))
+                if assurant_btn:
+                    self.logger.info("Assurant coverage popup appeared, skipping...")
+                    await page.click(AmazonLocators.ASSURANT_BUTTON)
+                    await asyncio.sleep(1)
+            except:
+                # Si no aparece, continuar normalmente
+                self.logger.info("No Assurant popup detected.")
+                await page.wait_for_load_state("networkidle")
             await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                    "09_added_to_cart.png"))
+                                                    "10_added_to_cart.png"))
             self.logger.info("Product added to cart successfully.")
         except Exception as e:
             self.logger.error(f"Error adding product to cart: {e}")
@@ -278,7 +295,7 @@ class AmazonBot:
             await page.click(AmazonLocators.CART_BUTTON)
             self.logger.info("Cart page loaded.")
             await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                    "10_cart_page.png"))
+                                                    "11_cart_page.png"))
 
             self.logger.info("Clicking proceed to checkout...")
             await page.wait_for_selector(
@@ -288,7 +305,7 @@ class AmazonBot:
             self.logger.info("Clicked proceed to checkout button.")
             await page.wait_for_load_state("networkidle")
             await page.screenshot(path=os.path.join(self.screenshot_folder,
-                                                    "11_checkout.png"))
+                                                    "12_checkout.png"))
             self.logger.info("Proceeded to checkout successfully.")
         except Exception as e:
             self.logger.error(f"Error proceeding to checkout: {e}")
