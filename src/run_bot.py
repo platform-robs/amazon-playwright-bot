@@ -1,13 +1,12 @@
+# run_bot.py
 import asyncio
-from .tests import AmazonBot
-
-async def main():
-    email = "tucorreo@gmail.com"
-    password = "TuPassword123"
-    headless = False  # True = headless, False = se ve el navegador
-
-    bot = AmazonBot(email=email, password=password, headless=headless)
-    await bot.run_test()
+from src.tests import AmazonBot
+from src.config import AMAZON_URL, HEADLESS_DEFAULT, SCREENSHOT_FOLDER
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    email = "platform.robs@gmail.com"
+    password = "Testing002!"
+    headless = True
+
+    bot = AmazonBot(email=email, password=password, headless=headless)
+    asyncio.run(bot.run_test())
