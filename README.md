@@ -47,9 +47,6 @@ amazon-playwright-bot/
 │   ├── logger.py
 │   └── tests.txt
 │
-├── api/
-│   └── api.py
-│
 ├── README.md
 ├── requirements.txt
 └── setup_env
