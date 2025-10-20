@@ -77,7 +77,7 @@ Este proyecto incluye un script (setup_env.py) que configura todo automáticamen
 **Esto hará automáticamente:**
 
 1. Crear un entorno virtual en venv si no existe
-2. Detectar tu sistema operativo y usar el pip correcto
+2. Detectar el sistema operativo y usar el pip correcto
 3. Instalar todas las dependencias de requirements.txt
 4. Activar el entorno virtual (opcional para trabajar dentro del entorno):
 
@@ -135,7 +135,7 @@ Se puede correr directamente mediente la terminal, una vez que ya se haya activa
 | `login(page)` | <br>Inicia sesión con las credenciales proporcionadas. <br><br>|
 | `navigate_to_tvs(page)` | <br>Accede a la categoría de televisores y aplica el filtro de tamaño. <br><br>|
 | `select_product(page)` | <br>Selecciona el primer producto disponible. <br><br>|
-| `add_to_cart(page)` | <br> el producto al carrito. <br><br>|
+| `add_to_cart(page)` | <br>Agrega el producto al carrito. <br><br>|
 | `proceed_to_checkout(page)` | <br>Abre el carrito y continúa hacia el proceso de compra. <br><br>|
 | `logger` | <br>Registra todas las acciones y errores durante la ejecución. <br><br>|
 
