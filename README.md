@@ -81,14 +81,6 @@ Este proyecto incluye un script (setup_env.py) que configura todo automáticamen
 3. Instalar todas las dependencias de requirements.txt
 4. Activar el entorno virtual (opcional para trabajar dentro del entorno):
 
-**Windows:**
-
-`venv\Scripts\activate`
-
-**Linux / macOS:**
-
-`source venv/bin/activate`
-
 **Al finalizar correctamente debe mostrarse:**
 
 `All done! The virtual environment is ready with all dependencies installed.`
@@ -97,7 +89,13 @@ Este proyecto incluye un script (setup_env.py) que configura todo automáticamen
 
 Antes de ejecutar cualquier script, activa el venv:
 
-`.\venv\Scripts\Activate.ps1`
+**Windows:**
+
+`venv\Scripts\activate`
+
+**Linux / macOS:**
+
+`source venv/bin/activate`
 
 **Verificar versión de playwright**
 
@@ -122,7 +120,7 @@ El bot se encuentra en el archivo *tests.py*
 
 Se puede correr directamente mediente la terminal, una vez que ya se haya activado el entorno virtual, utilizando el comando 
 
-`python src\tests.py`
+`python src/tests.py`
 
 ---
 
