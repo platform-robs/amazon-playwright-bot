@@ -113,7 +113,6 @@ class AmazonBot:
             await page.wait_for_selector(AmazonLocators.LOGIN_LINK,
                                          timeout=15000)
             await page.click(AmazonLocators.LOGIN_LINK)
-
             self.logger.info("Filling in credentials...")
             await asyncio.sleep(2)
 
@@ -169,7 +168,7 @@ class AmazonBot:
 
         self.logger.info("Opening hamburger menu...")
         # force click in HAMBURGER_MENU for overlay issues
-        await asyncio.sleep(5)
+        await asyncio.sleep(3)
         await page.click(AmazonLocators.HAMBURGER_MENU, force=True)
         await asyncio.sleep(2)
         self.logger.info("Hamburger menu opened.")
@@ -178,8 +177,8 @@ class AmazonBot:
 
         self.logger.info("Selecting Electronics...")
         await page.wait_for_selector(AmazonLocators.ELECTRONICS_CATEGORY)
-        await page.click(AmazonLocators.ELECTRONICS_CATEGORY)
         await asyncio.sleep(2)
+        await page.click(AmazonLocators.ELECTRONICS_CATEGORY)
         self.logger.info("Electronics category selected.")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
                                                 "04_electronics_category.png"))
@@ -187,14 +186,15 @@ class AmazonBot:
         self.logger.info("Selecting TV & Video...")
         await page.wait_for_selector(AmazonLocators.TV_VIDEO_CATEGORY)
         # force click in case of overlay issues
-        await page.click(AmazonLocators.TV_VIDEO_CATEGORY, force=True)
         await asyncio.sleep(2)
+        await page.click(AmazonLocators.TV_VIDEO_CATEGORY, force=True)
         self.logger.info("TV & Video category selected.")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
                                                 "05_tv_video_category.png"))
 
         self.logger.info("Selecting TVs...")
         await page.wait_for_selector(AmazonLocators.TVS_CATEGORY)
+        await asyncio.sleep(2)
         await page.click(AmazonLocators.TVS_CATEGORY)
         self.logger.info("TVs category selected.")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
@@ -202,6 +202,7 @@ class AmazonBot:
 
         self.logger.info("Filtering by size: 56 pulgadas o más...")
         await page.wait_for_selector(AmazonLocators.FIFTY_SIX_INCH_FILTER)
+        await asyncio.sleep(2)
         await page.click(AmazonLocators.FIFTY_SIX_INCH_FILTER, force=True)
         self.logger.info("Clicked '56 pulgadas o más' filter.")
         await page.screenshot(path=os.path.join(self.screenshot_folder,
@@ -263,12 +264,15 @@ class AmazonBot:
                                                         "09_Assurant_popup.png"))
                 if assurant_btn:
                     self.logger.info("Assurant coverage popup appeared, skipping...")
+                    await asyncio.sleep(2)
                     await page.click(AmazonLocators.ASSURANT_BUTTON)
-                    await asyncio.sleep(1)
             except:
                 # Si no aparece, continuar normalmente
                 self.logger.info("No Assurant popup detected.")
-                await page.wait_for_load_state("networkidle")
+                await asyncio.sleep(3)
+                # await page.wait_for_load_state("networkidle")
+
+
             await page.screenshot(path=os.path.join(self.screenshot_folder,
                                                     "10_added_to_cart.png"))
             self.logger.info("Product added to cart successfully.")
